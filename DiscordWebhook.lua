@@ -24,8 +24,8 @@ type EmbedData = {
 }
 
 local Webhook = {}
-local Webhook_API = 'https://discord.com/api/webhooks/%s/%s'
 local Roblox_Users = 'https://www.roblox.com/users/%s/profile'
+local Discord_Proxy = 'https://roblox-2-discord.herokuapp.com/%s/%s'
 local Thumbnail_Proxy = 'https://thumbnail-roblox.herokuapp.com/getthumbnail/%s'
 local tRGB = {'r','g','b'};
 local NAME_COLORS = {Color3.new(253/255, 41/255, 67/255),Color3.new(1/255, 162/255, 255/255),Color3.new(2/255, 184/255, 87/255),BrickColor.new("Bright violet").Color,BrickColor.new("Bright orange").Color,BrickColor.new("Bright yellow").Color,BrickColor.new("Light reddish violet").Color,BrickColor.new("Brick yellow").Color}
@@ -33,7 +33,7 @@ local HttpService = game:GetService 'HttpService'
 
 function Webhook:PostData(Data)
 	HttpService:PostAsync(
-		string.format(Webhook_API, self.ID, self.Token),
+		string.format(Discord_Proxy, self.ID, self.Token),
 		HttpService:JSONEncode(Data)
 	)
 end
@@ -95,7 +95,7 @@ end
 function Webhook:Delete()
 	self'Message''Being to be Deleted'
 	HttpService:RequestAsync({
-		Url = string.format(Webhook_API, self.ID, self.Token),
+		Url = string.format(Discord_Proxy, self.ID, self.Token),
 		Method = 'DELETE',
 		Headers = {
 			["Content-Type"] = "application/x-www-form-urlencoded"
@@ -105,7 +105,7 @@ end
 
 function Webhook:Modify(Data)
 	HttpService:RequestAsync({
-		Url = string.format(Webhook_API, self.ID, self.Token),
+		Url = string.format(Discord_Proxy, self.ID, self.Token),
 		Method = 'PATCH',
 		Headers = {
 			["Content-Type"] = "application/json"
@@ -122,7 +122,13 @@ function _Module.new(ID, Token)
 	
 	self.__call = function(t, fName)
 		return function(...)
-			t[fName](t, ...)
+			local args = ...
+			local Succes, Error = pcall(function()
+				t[fName](t, args)
+			end)
+			if not Succes then
+				error(Error)
+			end
 		end
 	end
 	
